@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# PYTHON_ARGCOMPLETE_OK
 """
 Parse cmake listfiles and format them nicely.
 
@@ -460,6 +461,11 @@ def inner_main():
       usage=USAGE_STRING)
 
   setup_argparser(arg_parser)
+  try:
+    import argcomplete
+    argcomplete.autocomplete(arg_parser)
+  except ImportError:
+    pass
   args = arg_parser.parse_args()
   logging.getLogger().setLevel(getattr(logging, args.log_level.upper()))
 
