@@ -2,6 +2,8 @@
 Changelog
 =========
 
+.. default-role:: literal
+
 -----------
 v0.6 series
 -----------
@@ -12,9 +14,18 @@ v0.6.11
 * Fix tag handling in release pipeline
 * Fix positional specification removed from global configuration on first
   parse of legacy commands
+* Add argcomplete to frontend commands enabling bash completion
+* Parse template listfiles that contain `@atword@` tokens at the statement
+  level (e.g. `@PACKAGE_INIT@`).
+* Simplify path specification for `always_wrap` to omit `BodyNode`, and
+  number `PargGroupNode[#]`.
 
+* Closes: `#109`_: Formatting of files containing @VARIABLE@ fails
+* Closes: `#180`_: ... regarding `always_wrap`
 * Closes: `#191`_: Inconsistent formatting for ...
 
+.. _#109: https://github.com/cheshirekow/cmake_format/issues/109
+.. _#180: https://github.com/cheshirekow/cmake_format/issues/180
 .. _#191: https://github.com/cheshirekow/cmake_format/issues/191
 
 v0.6.10

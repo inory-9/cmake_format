@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# PYTHON_ARGCOMPLETE_OK
 """
 Check cmake listfile for lint
 """
@@ -104,6 +105,11 @@ def inner_main():
       usage=USAGE_STRING)
 
   setup_argparse(argparser)
+  try:
+    import argcomplete
+    argcomplete.autocomplete(arg_parser)
+  except ImportError:
+    pass
   args = argparser.parse_args()
   logging.getLogger().setLevel(getattr(logging, args.log_level.upper()))
 

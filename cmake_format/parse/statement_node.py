@@ -119,3 +119,39 @@ class StatementNode(TreeNode):
     CommentNode.consume_trailing(ctx, tokens, node)
 
     return node
+
+class AtWordNode(TreeNode):
+  def __init__(self):
+    super(AtWordNode, self).__init__(NodeType.ATWORD)
+    self.token = None
+
+  @classmethod
+  def parse(cls, ctx, tokens):
+    node = cls()
+    node.token = tokens.pop(0)
+    node.children.append(node.token)
+    return node
+
+
+class AtWordStatementNode(TreeNode):
+  """Parent node of a statement subtree."""
+
+  def __init__(self):
+    super(AtWordStatementNode, self).__init__(NodeType.ATWORDSTATEMENT)
+    self.atword_node = None
+
+  @classmethod
+  def consume(cls, ctx, tokens):
+    """
+    Consume an at-word substitution for a complete statement, removing tokens
+    from the input list and returning an AtWordStatementNode.
+    """
+    node = cls()
+
+    # Consume the replacement tokens (at-word)
+    node.atword_node = AtWordNode.parse(ctx, tokens)
+    node.children.append(node.atword_node)
+
+    # Consume any trailing comments
+    CommentNode.consume_trailing(ctx, tokens, node)
+    return node

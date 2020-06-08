@@ -1,4 +1,4 @@
-set(_subdirs gtkutil json util tooling)
+set(_subdirs gtk gtkmm json util tooling)
 foreach(subdir ${_subdirs})
   if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}/CMakeLists.txt)
     add_subdirectory(${subdir})

@@ -15,8 +15,11 @@ from cmake_format.parse.common import (
     FlowType, NodeType, TreeNode
 )
 from cmake_format.parse.simple_nodes import (
-    CommentNode, OnOffNode, WhitespaceNode)
-from cmake_format.parse.statement_node import StatementNode
+    CommentNode, OnOffNode, WhitespaceNode
+)
+from cmake_format.parse.statement_node import (
+    AtWordStatementNode, StatementNode
+)
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +65,9 @@ class BodyNode(TreeNode):
           blocks.append(subtree)
         else:
           subtree = StatementNode.consume(ctx, tokens)
+          blocks.append(subtree)
+      elif token.type == lexer.TokenType.ATWORD:
+          subtree = AtWordStatementNode.consume(ctx, tokens)
           blocks.append(subtree)
       elif token.type == lexer.TokenType.BYTEORDER_MARK:
         tokens.pop(0)

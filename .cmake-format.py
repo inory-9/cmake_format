@@ -11,6 +11,7 @@ with section("parse"):
     # Wrappers.cmake
     "cc_binary": {
       "pargs": "1+",
+      "flags": ["ADD_RUNTARGET"],
       "kwargs": {
           "SRCS": "*",
           "DEPS": "*",
@@ -27,8 +28,31 @@ with section("parse"):
       "pargs": "1+",
       "flags": ["STATIC", "SHARED"],
       "kwargs": {
+          "INC": {
+            "pargs": 0,
+            "kwargs": {
+                "PUBLIC": "*",
+                "PRIVATE": "*",
+                "INTERFACE": "*",
+            }
+          },
+          "LIBDIRS": {
+            "pargs": "*",
+            "kwargs": {
+                "PUBLIC": "*",
+                "PRIVATE": "*",
+                "INTERFACE": "*",
+            }
+          },
           "SRCS": "*",
-          "DEPS": "*",
+          "DEPS": {
+            "pargs": "*",
+            "kwargs": {
+                "PUBLIC": "*",
+                "PRIVATE": "*",
+                "INTERFACE": "*",
+            }
+          },
           "PKGDEPS": "*",
           "PROPERTIES": {
             "kwargs": {
@@ -73,6 +97,12 @@ with section("parse"):
         "OUTPUT_STRIP_TRAILING_WHITESPACE",
         "ERROR_STRIP_TRAILING_WHITESPACE",
       ]
+    },
+    "join": {
+      "pargs": [1, "+"],
+      "kwargs": {
+          "GLUE": 1,
+      }
     },
 
     # debian.cmake
@@ -142,5 +172,19 @@ with section("parse"):
         "SOURCEDIR": 1,
         "FILES": "*"
       },
-    }
+    },
+
+    # GtkDocConfig.cmake
+    "gtk_doc_add_module": {
+      "pargs": 1,
+      "kwargs": {
+        "FIXREFOPTS": "*",
+        "IGNOREHEADERS": "*",
+        "LIBRARIES": "*",
+        "LIBRARY_DIRS": "*",
+        "SOURCE": "*",
+        "SUFFIXES": "*",
+        "XML": 1,
+      },
+    },
   }
