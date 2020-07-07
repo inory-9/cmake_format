@@ -41,7 +41,7 @@ def process_file(config, local_ctx, infile_content):
   checker.check_tokens(tokens)
 
   parse_db = parse_funs.get_parse_db()
-  parse_db.update(parse_funs.get_legacy_parse(config.parse.fn_spec).kwargs)
+  parse_db.update(parse_funs.get_funtree(config.parse.fn_spec))
   ctx = parse.ParseContext(parse_db, local_ctx, config)
   parse_tree = parse.parse(tokens, ctx)
   parse_tree.build_ancestry()
@@ -107,7 +107,7 @@ def inner_main():
   setup_argparse(argparser)
   try:
     import argcomplete
-    argcomplete.autocomplete(arg_parser)
+    argcomplete.autocomplete(argparser)
   except ImportError:
     pass
   args = argparser.parse_args()

@@ -67,8 +67,8 @@ class BodyNode(TreeNode):
           subtree = StatementNode.consume(ctx, tokens)
           blocks.append(subtree)
       elif token.type == lexer.TokenType.ATWORD:
-          subtree = AtWordStatementNode.consume(ctx, tokens)
-          blocks.append(subtree)
+        subtree = AtWordStatementNode.consume(ctx, tokens)
+        blocks.append(subtree)
       elif token.type == lexer.TokenType.BYTEORDER_MARK:
         tokens.pop(0)
       else:

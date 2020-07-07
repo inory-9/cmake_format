@@ -119,7 +119,7 @@ def process_file(config, infile_content, dump=None):
     return outfile.getvalue(), True
   first_token = lexer.get_first_non_whitespace_token(tokens)
   parse_db = parse_funs.get_parse_db()
-  parse_db.update(parse_funs.get_legacy_parse(config.parse.fn_spec).kwargs)
+  parse_db.update(parse_funs.get_funtree(config.parse.fn_spec))
   ctx = parse.ParseContext(parse_db, config=config)
   parse_tree = parse.parse(tokens, ctx)
   if dump == "parse":
@@ -454,6 +454,7 @@ def get_argdict(args):
 
 def inner_main():
   """Parse arguments, open files, start work."""
+  # pylint: disable=too-many-statements
 
   arg_parser = argparse.ArgumentParser(
       description=__doc__,
@@ -507,6 +508,10 @@ def inner_main():
 
     cfg = configuration.Configuration(**config_dict)
     cfg.legacy_consume(argparse_dict)
+
+    if cfg.format.disable:
+      continue
+
     if infile_path == '-':
       infile = io.open(os.dup(sys.stdin.fileno()),
                        mode='r', encoding=cfg.encode.input_encoding, newline='')

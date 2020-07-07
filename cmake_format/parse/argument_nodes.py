@@ -13,6 +13,7 @@ from cmake_format.parse.util import (
     npargs_is_exact,
     pargs_are_full,
     IMPLICIT_PARG_TYPES,
+    CommandSpec,
     PositionalSpec,
     WHITESPACE_TOKENS,
     should_break,
@@ -52,6 +53,7 @@ class StandardArgTree(ArgGroupNode):
     super(StandardArgTree, self).__init__()
     self.parg_groups = []
     self.kwarg_groups = []
+    self.cmdspec = None
 
   def check_required_kwargs(self, lint_ctx, required_kwargs):
     for kwargnode in self.kwarg_groups:
@@ -70,7 +72,7 @@ class StandardArgTree(ArgGroupNode):
         lint_ctx.record_lint(lintid, word, location=location)
 
   @classmethod
-  def parse2(cls, ctx, tokens, pargspecs, kwargs, breakstack):
+  def parse2(cls, ctx, tokens, cmdspec, kwargs, breakstack):
     """
     Standard parser for the commands in the form of::
 
@@ -85,8 +87,9 @@ class StandardArgTree(ArgGroupNode):
     """
 
     # NOTE(josh): we will pop things off this list, so let's make a copy
-    pargspecs = list(pargspecs)
+    pargspecs = list(cmdspec.pargs)
     tree = cls()
+    tree.cmdspec = cmdspec
 
     # If it is a whitespace token then put it directly in the parse tree at
     # the current depth
@@ -159,9 +162,8 @@ class StandardArgTree(ArgGroupNode):
             KwargBreaker(list(kwargs.keys()) + other_flags)]
 
         with ctx.pusharg(tree):
-          subtree = PositionalGroupNode.parse(
-              ctx, tokens, pspec.nargs, pspec.flags, positional_breakstack)
-          subtree.tags.extend(pspec.tags)
+          subtree = PositionalGroupNode.parse2(
+              ctx, tokens, pspec, positional_breakstack)
           tree.parg_groups.append(subtree)
 
       assert len(tokens) < ntokens, "parsed an empty subtree"
@@ -194,7 +196,8 @@ class StandardArgTree(ArgGroupNode):
           " positional group specifications")
       pargspecs = npargs
 
-    return cls.parse2(ctx, tokens, pargspecs, kwargs, breakstack)
+    return cls.parse2(
+        ctx, tokens, CommandSpec("<none>", pargspecs), kwargs, breakstack)
 
 
 class StandardParser(object):
@@ -217,19 +220,27 @@ class StandardParser(object):
 
 
 class StandardParser2(object):
-  def __init__(self, pspec=None, kwargs=None, doc=None):
-    if pspec is None:
-      pspec = PositionalSpec("*")
-    if kwargs is None:
-      kwargs = {}
+  def __init__(self, cmdspec=None, funtree=None, doc=None):
+    if cmdspec is None:
+      cmdspec = ("<none>", "*")
+    if funtree is None:
+      funtree = {}
 
-    self.pspec = pspec
-    self.kwargs = kwargs
+    self.cmdspec = cmdspec
+    self.funtree = funtree
     self.doc = doc
+
+  @property
+  def pspec(self):
+    return self.cmdspec.pargs
+
+  @property
+  def kwargs(self):
+    return self.funtree
 
   def __call__(self, ctx, tokens, breakstack):
     return StandardArgTree.parse2(
-        ctx, tokens, self.pspec, self.kwargs, breakstack)
+        ctx, tokens, self.cmdspec, self.funtree, breakstack)
 
 
 class KeywordNode(TreeNode):

@@ -257,6 +257,7 @@ set(_docsources
     index.rst
     installation.rst
     lint-example.rst
+    lint-inline.rst
     lint-notes.rst
     lint-summary.rst
     lint-usage.rst

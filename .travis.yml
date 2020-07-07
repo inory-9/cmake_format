@@ -25,8 +25,11 @@ install:
 - pip install -r pip-requirements.txt
 
 script:
-- make better-test
-- make lint
+- mkdir ${TRAVIS_BUILD_DIR}/../cmake-build
+- cd ${TRAVIS_BUILD_DIR}/../cmake-build
+- cmake -G Ninja ${TRAVIS_BUILD_DIR}
+- ninja better-test
+- ninja lint
 
 env:
   global:
@@ -42,7 +45,7 @@ jobs:
         AND branch =~ ^((master)|(staging))$
     python: 3.6
     script:
-    - make push-cmake_format-github-pseudorelease-tag
+    - ninja push-cmake_format-github-pseudorelease-tag
   - name: deploy-artifacts
     python: 3.6
     if: repo = cheshirekow/cmake_format
@@ -50,5 +53,10 @@ jobs:
         AND (tag =~ ^pseudo-((master)|(staging))$
              OR tag =~ ^v\d+\.\d+\.\d+)
     script:
-    - make push-cmake_format-github-release
-    - make push-cmake_format-rtd-repo
+    - ninja push-cmake_format-github-release
+    - ninja push-cmake_format-rtd-repo
+
+stages:
+  - test
+  - name: deploy
+    if: type IS push

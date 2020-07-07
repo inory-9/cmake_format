@@ -22,6 +22,15 @@ argcomplete).
 
 .. __: https://pypi.org/project/argcomplete/
 
+The visual studio code extension now supports variable substitution for things
+like `${workspaceRoot}` and `${workspaceFolder}` in the `args` and `cwd`
+configuration options.
+
+There is a new configuration option to `disable` formatting. This can be
+specified in a config file to conveniently no-op formatting within a
+subdirectory (such as third-party source code) of a project.
+
+
 -------
 v0.6.10
 -------

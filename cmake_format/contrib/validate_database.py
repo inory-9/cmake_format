@@ -67,7 +67,7 @@ class TestContributorAgreements(unittest.TestCase):
       self.homedir = usual_homedir
     else:
       self.homedir = tempfile.mkdtemp(prefix="gpgtmp_")
-      self.rmtrees.append(homedir)
+      self.rmtrees.append(self.homedir)
 
   def tearDown(self):
     for dirpath in self.rmtrees:

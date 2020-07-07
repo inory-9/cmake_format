@@ -10,7 +10,7 @@ from cmake_format.common import UserError
 from cmake_format.parse.util import COMMENT_TOKENS, WHITESPACE_TOKENS
 from cmake_format.parse.common import NodeType, ParenBreaker, TreeNode
 from cmake_format.parse.printer import tree_string
-from cmake_format.parse.argument_nodes import StandardParser
+from cmake_format.parse.argument_nodes import StandardParser, StandardParser2
 from cmake_format.parse.simple_nodes import CommentNode
 
 
@@ -37,6 +37,7 @@ class StatementNode(TreeNode):
     super(StatementNode, self).__init__(NodeType.STATEMENT)
     self.funnode = None
     self.argtree = None
+    self.cmdspec = None
 
   def get_funname(self):
     return self.funnode.token.spelling.lower()
@@ -81,6 +82,10 @@ class StatementNode(TreeNode):
       # If the parse_db provides a "_default" then use that. Otherwise use the
       # standard parser with no kwargs or flags.
       parse_fun = ctx.parse_db.get("_default", StandardParser())
+
+    if isinstance(parse_fun, StandardParser2):
+      node.cmdspec = parse_fun.cmdspec
+
     node.argtree = subtree = parse_fun(ctx, tokens, breakstack)
     node.children.append(subtree)
 
@@ -119,6 +124,7 @@ class StatementNode(TreeNode):
     CommentNode.consume_trailing(ctx, tokens, node)
 
     return node
+
 
 class AtWordNode(TreeNode):
   def __init__(self):
