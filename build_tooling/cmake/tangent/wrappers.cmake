@@ -415,3 +415,35 @@ function(find_tangent_package package_name)
   endif()
   find_package(${package_name} ${ARGN})
 endfunction()
+
+# Tunable verbose logging
+function(vlog level)
+  if(NOT DEFINED TANGENT_VERBOSE_LEVEL)
+    return()
+  endif()
+  if("${level}" GREATER ${TANGENT_VERBOSE_LEVEL})
+    return()
+  endif()
+  message(STATUS ${ARGN})
+endfunction()
+
+# Glob the current source directory for any children that have listfiles, and
+# add them.
+function(glob_subdirs)
+  # NOTE(josh): search through the list of child directories and add any that
+  # actually contain a listfile. While globs are evil, this is necessary for
+  # sparse checkouts. We can and should correctly add dependencies for this glob
+  # in order to retrigger cmake.
+  file(
+    GLOB children
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/*)
+  foreach(child ${children})
+    set(candidate ${CMAKE_CURRENT_SOURCE_DIR}/${child}/CMakeLists.txt)
+    if(EXISTS ${candidate})
+      file(RELATIVE_PATH relpath_candidate "${CMAKE_SOURCE_DIR}" "${candidate}")
+      vlog(1 "Enabling subdirectory ${relpath_candidate}")
+      add_subdirectory(${child})
+    endif()
+  endforeach()
+endfunction()

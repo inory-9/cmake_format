@@ -59,17 +59,4 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
 set(ENV{PYTHONPATH} ${CMAKE_SOURCE_DIR})
 set(CTEST_ENVIRONMENT "PYTHONPATH=${CMAKE_SOURCE_DIR}")
 
-# NOTE(josh): search through the list of child directories and add any that
-# actually contain a listfile. While globs are evil, this is necessary for
-# sparse checkouts. We can and should correctly add dependencies for this glob
-# in order to retrigger cmake.
-file(
-  GLOB children
-  RELATIVE ${CMAKE_SOURCE_DIR}
-  ${CMAKE_SOURCE_DIR}/*)
-foreach(child ${children})
-  if(EXISTS ${CMAKE_SOURCE_DIR}/${child}/CMakeLists.txt)
-    message("Enabling subdirectory '${child}' for this checkout")
-    add_subdirectory(${child})
-  endif()
-endforeach()
+glob_subdirs()

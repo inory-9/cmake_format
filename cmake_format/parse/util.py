@@ -423,6 +423,7 @@ def parse_pspec(pargs, flags):
     pargs = ZERO_OR_MORE
 
   # If we only have one scalar specification, return a legacy specification
+  # TODO(josh): should we only do this if we also have flags?
   if isinstance(pargs, STRING_TYPES + (int,)):
     return [PositionalSpec(pargs, flags=flags, legacy=True)]
 

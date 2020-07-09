@@ -6,6 +6,8 @@ from __future__ import unicode_literals
 import logging
 
 from cmake_format import lexer
+from cmake_format.common import InternalError
+from cmake_format.parse.printer import dump_tree_tostr
 from cmake_format.parse.util import (
     comment_belongs_up_tree,
     get_normalized_kwarg,
@@ -97,12 +99,15 @@ class StandardArgTree(ArgGroupNode):
       tree.children.append(tokens.pop(0))
       continue
 
-    # NOTE(josh): if there is only one legacy specification then we reuse that
-    # specification for any additional positional arguments that we pick up.
-    # This is to maintain the current/legacy behavior of simple positional
-    # argument specifications
+    # NOTE(josh): if there is only one non-exact legacy specification then we
+    # reuse that specification for any additional positional arguments that we
+    # pick up. This is to maintain the current/legacy behavior of simple
+    # positional argument specifications
+    # TODO(josh): double check the reasoning for this. I think it might be
+    # mistaken and unnecessary
     default_spec = DEFAULT_PSPEC
-    if len(pargspecs) == 1 and pargspecs[0].legacy:
+    if (len(pargspecs) == 1 and pargspecs[0].legacy
+        and not npargs_is_exact(pargspecs[0].nargs)):
       default_spec = pargspecs.pop(0)
 
     all_flags = list(default_spec.flags)
@@ -113,12 +118,6 @@ class StandardArgTree(ArgGroupNode):
         KwargBreaker(list(kwargs.keys()) + all_flags)]
 
     while tokens:
-      # Break if the next token belongs to a parent parser, i.e. if it
-      # matches a keyword argument of something higher in the stack, or if
-      # it closes a parent group.
-      if should_break(tokens[0], breakstack):
-        break
-
       # If it is a whitespace token then put it directly in the parse tree at
       # the current depth
       if tokens[0].type in WHITESPACE_TOKENS:
@@ -138,6 +137,28 @@ class StandardArgTree(ArgGroupNode):
                             lexer.TokenType.FORMAT_ON):
         tree.children.append(OnOffNode.consume(ctx, tokens))
         continue
+
+      # Break if the next token belongs to a parent parser, i.e. if it
+      # matches a keyword argument of something higher in the stack, or if
+      # it closes a parent group.
+      if should_break(tokens[0], breakstack):
+        # NOTE(josh): if spec.nargs is an exact number of arguments, then we
+        # shouldn't break on kwarg match from a parent parser. Instead, we
+        # should consume that many tokens. This is a hack to deal with
+        # ```install(RUNTIME COMPONENT runtime)``. In this case the second
+        # occurance of "runtime" should not match the ``RUNTIME`` keyword
+        # and should not break the positional parser.
+        # TODO(josh): this is kind of hacky because it will force the positional
+        # parser to consume a right parenthesis and will lead to parse errors
+        # in the event of a missing positional argument. Such errors will be
+        # difficult to debug for the user.
+        if pargspecs:
+          pspec = pargspecs[0]
+        else:
+          pspec = default_spec
+
+        if not npargs_is_exact(pspec.nargs) or pspec.nargs == 0:
+          break
 
       ntokens = len(tokens)
       word = get_normalized_kwarg(tokens[0])
@@ -166,7 +187,10 @@ class StandardArgTree(ArgGroupNode):
               ctx, tokens, pspec, positional_breakstack)
           tree.parg_groups.append(subtree)
 
-      assert len(tokens) < ntokens, "parsed an empty subtree"
+      if len(tokens) >= ntokens:
+        raise InternalError(
+            "parsed an empty subtree at {}:\n  {}\n pspec: {}"
+            .format(tokens[0], dump_tree_tostr([tree]), pspec))
       tree.children.append(subtree)
     return tree
 
@@ -337,6 +361,7 @@ class PositionalGroupNode(TreeNode):
       tree.sortable = False
 
     while tokens:
+
       # Break if we have consumed   enough positional arguments
       if pargs_are_full(spec.nargs, nconsumed):
         break

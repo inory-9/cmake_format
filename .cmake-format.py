@@ -56,11 +56,14 @@ with section("parse"):
           "PKGDEPS": "*",
           "PROPERTIES": {
             "kwargs": {
-              "LIBRARY_OUTPUT_NAME": 1,
-              "VERSION": 1,
-              "SOVERSION": 1,
+              "ARCHIVE_OUTPUT_NAME": 1,
               "EXPORT_NAME": 1,
               "INTERFACE_INCLUDE_DIRECTORIES": 1,
+              "LIBRARY_OUTPUT_NAME": 1,
+              "OUTPUT_NAME": 1,
+              "SOVERSION": 1,
+              "SUFFIX": 1,
+              "VERSION": 1,
             }
           }
       }
